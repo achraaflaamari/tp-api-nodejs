@@ -32,6 +32,8 @@ app.use(express.json());
 // ROUTES
 // ============================================
 
+
+
 // Route d'accueil - pour tester que le serveur fonctionne
 app.get('/', (req, res) => {
     res.json({
@@ -79,3 +81,4 @@ app.listen(PORT, () => {
     ╚════════════════════════════════════════════╝
     `);
 });
+
