@@ -68,6 +68,28 @@ describe('POST /api/etudiants', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  test('retourne 400 si la moyenne est négative', async () => {
+    const res = await request(app)
+      .post('/api/etudiants')
+      .send({ nom: 'Dupont', prenom: 'Alice', email: 'alice.neg@example.com', filiere: 'Informatique', annee: 2, moyenne: -5 });
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBeDefined();
+  });
+
+  test('retourne 400 si la moyenne dépasse 20', async () => {
+    const res = await request(app)
+      .post('/api/etudiants')
+      .send({ nom: 'Dupont', prenom: 'Alice', email: 'alice.over@example.com', filiere: 'Informatique', annee: 2, moyenne: 25 });
+    expect(res.statusCode).toBe(400);
+  });
+
+  test('retourne 400 si la moyenne n\'est pas un nombre', async () => {
+    const res = await request(app)
+      .post('/api/etudiants')
+      .send({ nom: 'Dupont', prenom: 'Alice', email: 'alice.str@example.com', filiere: 'Informatique', annee: 2, moyenne: 'bonne' });
+    expect(res.statusCode).toBe(400);
+  });
+
 });
 
 
@@ -84,6 +106,11 @@ describe('GET /api/etudiants/:id', () => {
     const fakeId = new mongoose.Types.ObjectId();
     const res = await request(app).get(`/api/etudiants/${fakeId}`);
     expect(res.statusCode).toBe(404);
+  });
+
+  test('retourne 400 pour un ID mal formaté', async () => {
+    const res = await request(app).get('/api/etudiants/pas-un-id-valide');
+    expect(res.statusCode).toBe(400);
   });
 
 });
@@ -108,6 +135,21 @@ describe('PUT /api/etudiants/:id', () => {
       .put(`/api/etudiants/${fakeId}`)
       .send({ moyenne: 17 });
     expect(res.statusCode).toBe(404);
+  });
+
+  test('retourne 400 si l\'ID est mal formaté lors de la mise à jour', async () => {
+    const res = await request(app)
+      .put('/api/etudiants/pas-un-id-valide')
+      .send({ moyenne: 17 });
+    expect(res.statusCode).toBe(400);
+  });
+
+  test('retourne 400 si la moyenne mise à jour est invalide', async () => {
+    const etudiant = await Etudiant.create({ nom: 'Dupont', prenom: 'Alice', email: 'alice.up.err@example.com', filiere: 'Informatique', annee: 2 });
+    const res = await request(app)
+      .put(`/api/etudiants/${etudiant._id}`)
+      .send({ moyenne: 25 });
+    expect(res.statusCode).toBe(400);
   });
 
 });

@@ -11,6 +11,29 @@ const Etudiant = require('../models/Etudiant');
 
 exports.createEtudiant = async (req, res) => {
     try {
+        const { nom, prenom, moyenne } = req.body;
+
+        if (!nom || !prenom) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Le nom et le prénom sont obligatoires' 
+            });
+        }
+        if (moyenne !== undefined && moyenne !== null) {
+            if (typeof moyenne !== 'number') {
+                return res.status(400).json({ 
+                    success: false,
+                    message: 'La moyenne doit être un nombre' 
+                });
+            }
+            if (moyenne < 0 || moyenne > 20) {
+                return res.status(400).json({ 
+                    success: false,
+                    message: 'La moyenne doit être comprise entre 0 et 20' 
+                });
+            }
+        }
+
         // Étape 1: Récupérer les données envoyées par le client
         // req.body contient les données JSON envoyées
         console.log('📥 Données reçues:', req.body);
@@ -91,10 +114,18 @@ exports.getAllEtudiants = async (req, res) => {
 
 exports.getEtudiantById = async (req, res) => {
     try {
+        const mongoose = require('mongoose');
         // Étape 1: Récupérer l'ID depuis les paramètres de l'URL
         // req.params contient les paramètres de l'URL
         console.log('🔍 Recherche de l\'ID:', req.params.id);
         
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID invalide'
+            });
+        }
+
         // Étape 2: Chercher l'étudiant par son ID
         const etudiant = await Etudiant.findById(req.params.id);
         
@@ -129,8 +160,16 @@ exports.getEtudiantById = async (req, res) => {
 
 exports.updateEtudiant = async (req, res) => {
     try {
+        const mongoose = require('mongoose');
         console.log('✏️ Mise à jour de l\'ID:', req.params.id);
         console.log('📥 Nouvelles données:', req.body);
+        
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID invalide'
+            });
+        }
         
         // findByIdAndUpdate prend 3 arguments: 
         // 1. L'ID du document à modifier
@@ -177,8 +216,16 @@ exports.updateEtudiant = async (req, res) => {
 
 exports.deleteEtudiant = async (req, res) => {
     try {
+        const mongoose = require('mongoose');
         console.log('🗑️ Suppression de l\'ID:', req.params.id);
         
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID invalide'
+            });
+        }
+
         // Trouver et supprimer l'étudiant
         const etudiant = await Etudiant.findByIdAndUpdate(req.params.id, { actif: false });
         
